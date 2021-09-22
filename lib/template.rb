@@ -1,5 +1,3 @@
-class Template
-  def saludar
-    "Hola!"
-  end
+def trait(constante)
+  "Hola"
 end

@@ -1,12 +1,22 @@
 require 'rspec'
 require 'template'
 
+class Prueba
+  # uses Dummy
+end
+
+
 describe 'template tests' do
 
-  it 'un template saluda con "Hola!"' do
-    un_template = Template.new
+  it 'xd' do
+    trait :Dummy do
+      def un_metodo_del_trait
+        10
+      end
+    end
 
-    expect(un_template.saludar).to eq("Hola!")
+    expect(Prueba.new.respond_to?(:un_metodo_del_trait)).to be_truthy
+    expect(Prueba.new.un_metodo_del_trait).to be(10)
   end
 
 end
