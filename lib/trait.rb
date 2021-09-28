@@ -1,17 +1,16 @@
 class Trait
   attr_reader :cosas, :name
 
-  def initialize(name, cosas, operations = [])
+  def initialize(metodos, operations = [])
     super()
-    @name = name
-    @cosas = cosas
     # Agregar todos los traits a combinar (para eliminar los duplicados)
     @operations = operations
+    @metodos = metodos
   end
 
   def description
     # Eval operations
-    @name.to_s + @operations.map {|op| op.description}.join("")
+    @operations.map {|op| op.description}.join("")
   end
 
   def +(trait)
@@ -19,7 +18,7 @@ class Trait
     operations = @operations.dup
     operations << Operation.new(:+, trait)
     #Devolver un nuevo Trait con el nuevo cambio, es decir, hacerlo inmutable
-    self.class.new(@name, @cosas, operations)
+    self.class.new(@cosas, operations)
   end
 
   def -(argMethods)
@@ -28,12 +27,16 @@ class Trait
     operations = @operations.dup
     operations << Operation.new(:-, methods)
     #Devolver un nuevo Trait con el nuevo cambio, es decir, hacerlo inmutable
-    self.class.new(@name, @cosas, operations)
+    self.class.new(@cosas, operations)
   end
 
   def to_s
     self.description
   end
+end
+
+class Method
+
 end
 
 class Operation
@@ -48,16 +51,6 @@ class Operation
   def description
     " " + @operationType.to_s + " " + @operator.to_s
   end
-end
-
-class Class
-  def uses(trait)
-    class_eval(&trait.cosas)
-  end
-end
-
-def trait(traitName, &definitions)
-  Object.const_set(traitName, Trait.new(traitName, definitions))
 end
 
 # Not working :(
