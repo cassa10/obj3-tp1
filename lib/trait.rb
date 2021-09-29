@@ -1,11 +1,19 @@
 class Trait
-  attr_reader :cosas, :name
+  attr_reader :metodos
 
-  def initialize(metodos, operations = [])
+  def initialize(operations = [], &proc_con_definiciones)
     super()
-    # Agregar todos los traits a combinar (para eliminar los duplicados)
+    clase_temporal = Class.new
+    clase_temporal.class_eval(&proc_con_definiciones)
+
+    @metodos = obtener_metodos(clase_temporal)
     @operations = operations
-    @metodos = metodos
+  end
+
+  def obtener_metodos(clase_temporal)
+    instancia_de_clase = clase_temporal.new
+    metodos_a_agregar = instancia_de_clase.methods - clase_temporal.superclass.methods
+    metodos_a_agregar.map { |metodo| instancia_de_clase.method(metodo) }
   end
 
   def description
@@ -35,10 +43,6 @@ class Trait
   end
 end
 
-class Method
-
-end
-
 class Operation
   def initialize(operationType, operator)
     super()
@@ -58,5 +62,10 @@ def requires(*methods)
   #  unless methods.all? { |met| self.respond_to? met }
   #    throw "not implemented all required methods"
   #  end
+end
+
+def Object.const_missing(name)
+  # Que deberia hacer aca? Ya el mensaje `uses` de clase define la constante, asi que no se que retornar
+  name
 end
 

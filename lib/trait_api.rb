@@ -1,11 +1,11 @@
 require 'trait'
 
 def trait(traitName, &definitions)
-  Object.const_set(traitName, Trait.new(definitions))
+  Object.const_set(traitName, Trait.new(&definitions))
 end
 
 class Class
   def uses(trait)
-    trait.methods.each { |method| self.define_method(method) }
+    trait.metodos.each { |metodo| define_method(metodo.original_name, metodo.to_proc) }
   end
 end

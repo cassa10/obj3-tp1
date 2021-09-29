@@ -2,10 +2,10 @@ require 'rspec'
 require 'trait'
 require 'trait_api'
 
-describe 'trait api tests' do
+describe 'Trait API' do
 
   it 'cuando una clase usa un trait con sus metodos, luego puede responder los metodos de ese trait' do
-    trait :UnTrait do
+    trait UnTrait do
       def un_metodo_del_trait
         10
       end
@@ -16,15 +16,12 @@ describe 'trait api tests' do
     end
 
     una_instancia_de_una_clase = una_clase.new
-
     expect(una_instancia_de_una_clase.respond_to?(:un_metodo_del_trait)).to be_truthy
     expect(una_instancia_de_una_clase.un_metodo_del_trait).to eq 10
   end
 
-  it 'sadadasf' do
-
-  end
-
+=begin
+  comentado hasta que pasemos a operaciones
   it 'sarasa' do
     prueba = Prueba.new
 
@@ -38,4 +35,5 @@ describe 'trait api tests' do
     expect((Dummy - :sarasa + (Dummy2 + Dummy)).description).to eq "Dummy - [:sarasa] + Dummy2 + Dummy"
 
   end
+=end
 end
