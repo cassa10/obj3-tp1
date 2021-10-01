@@ -5,20 +5,37 @@ require 'trait_api'
 describe 'Trait API' do
 
   it 'cuando una clase usa un trait con sus metodos, luego puede responder los metodos de ese trait' do
-    trait UnTrait do
-      def un_metodo_del_trait
+    trait Trait1 do
+      def metodo_del_trait1
         10
       end
     end
 
-    una_clase = Class.new do
-      uses UnTrait
+    trait Trait2 do
+      def metodo_del_trait2
+        "sarasa"
+      end
     end
 
-    una_instancia_de_una_clase = una_clase.new
-    expect(una_instancia_de_una_clase.respond_to?(:un_metodo_del_trait)).to be_truthy
-    expect(una_instancia_de_una_clase.un_metodo_del_trait).to eq 10
+    clase_1 = Class.new do
+      uses Trait1
+    end
+
+    clase_2 = Class.new do
+      uses Trait2
+    end
+
+    una_instancia_de_clase_1 = clase_1.new
+    una_instancia_de_clase_2 = clase_2.new
+
+    expect(una_instancia_de_clase_1.respond_to?(:metodo_del_trait1)).to be_truthy
+    expect(una_instancia_de_clase_1.metodo_del_trait1).to eq 10
+
+    expect(una_instancia_de_clase_2.respond_to?(:metodo_del_trait2)).to be_truthy
+    expect(una_instancia_de_clase_2.metodo_del_trait2).to eq "sarasa"
   end
+
+
 
 =begin
   comentado hasta que pasemos a operaciones

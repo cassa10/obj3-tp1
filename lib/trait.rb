@@ -1,19 +1,11 @@
 class Trait
-  attr_reader :metodos
+  attr_reader :metodos, :metodos_requeridos
 
-  def initialize(operations = [], &proc_con_definiciones)
+  def initialize(metodos, metodos_requeridos = [], operaciones = [])
     super()
-    clase_temporal = Class.new
-    clase_temporal.class_eval(&proc_con_definiciones)
-
-    @metodos = obtener_metodos(clase_temporal)
-    @operations = operations
-  end
-
-  def obtener_metodos(clase_temporal)
-    instancia_de_clase = clase_temporal.new
-    metodos_a_agregar = instancia_de_clase.methods - clase_temporal.superclass.methods
-    metodos_a_agregar.map { |metodo| instancia_de_clase.method(metodo) }
+    @metodos = metodos
+    @metodos_requeridos = metodos_requeridos
+    @operations = operaciones
   end
 
   def description
