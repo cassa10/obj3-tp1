@@ -23,6 +23,28 @@ describe 'Trait' do
     expect(una_instancia_de_la_clase.un_metodo_del_trait).to eq 10
   end
 
+  it 'cuando una clase usa un trait, luego puede responder los mensajes que ya definia esta clase' do
+    metodos = (MethodParser.new do
+      def un_metodo_del_trait
+        10
+      end
+    end).obtener_metodos
+
+    un_trait = Trait.new(metodos)
+
+    una_clase = Class.new do
+      uses un_trait
+
+      def un_metodo_de_la_clase
+        15
+      end
+    end
+
+    una_instancia_de_la_clase = una_clase.new
+    expect(una_instancia_de_la_clase.respond_to?(:un_metodo_de_la_clase)).to be_truthy
+    expect(una_instancia_de_la_clase.un_metodo_de_la_clase).to eq 15
+  end
+
   it 'cuando una clase usa un trait que requiere un metodo, este lanza una excepcion si la clase no implementa algun metodo requerido' do
 
     metodos = (MethodParser.new do
@@ -56,7 +78,30 @@ describe 'Trait' do
 
   end
 
-  it 'asldasldjk' do
+  it 'cuando una clase usa un trait que requiere un metodo y esta clase define dicho metodo, puede instanciarse' do
+    metodos = (MethodParser.new do
+      def un_metodo_del_trait
+        10
+      end
+    end).obtener_metodos
+
+    metodos_requeridos = [:algun_metodo]
+
+    trait = Trait.new(metodos, metodos_requeridos)
+
+    una_clase = Class.new do
+      uses trait
+
+      def algun_metodo
+        "sarasa"
+      end
+    end
+
+    una_instancia_de_la_clase = una_clase.new
+    expect(una_instancia_de_la_clase.respond_to?(:algun_metodo)).to be_truthy
+  end
+
+  it 'cuando una clase usa un trait que requiere un metodo y una superclase de esta clase define dicho metodo, puede instanciarse' do
 
     metodos = (MethodParser.new do
       def un_metodo_del_trait
@@ -66,17 +111,47 @@ describe 'Trait' do
 
     metodos_requeridos = [:algun_metodo]
 
-    trait_1 = Trait.new(metodos, metodos_requeridos)
+    trait = Trait.new(metodos, metodos_requeridos)
 
-    una_clase = Class.new do
-      uses trait_1
-
+    una_superclase = Class.new do
       def algun_metodo
         "sarasa"
       end
     end
 
+    una_clase = Class.new(una_superclase) do
+      uses trait
+    end
+
     una_instancia_de_la_clase = una_clase.new
-    expect(una_instancia_de_la_clase).to
+    expect(una_instancia_de_la_clase.respond_to?(:algun_metodo)).to be_truthy
+  end
+
+
+  it 'cuando una clase usa un trait que requiere un metodo y esta clase usa un mixin que define dicho metodo, puede instanciarse' do
+
+    metodos = (MethodParser.new do
+      def un_metodo_del_trait
+        10
+      end
+    end).obtener_metodos
+
+    metodos_requeridos = [:algun_metodo]
+
+    trait = Trait.new(metodos, metodos_requeridos)
+
+    un_mixin = Module.new do
+      def algun_metodo
+        "sarasa"
+      end
+    end
+
+    una_clase = Class.new do
+      include un_mixin
+      uses trait
+    end
+
+    una_instancia_de_la_clase = una_clase.new
+    expect(una_instancia_de_la_clase.respond_to?(:algun_metodo)).to be_truthy
   end
 end

@@ -6,9 +6,18 @@ def trait(traitName, &definitions)
 end
 
 class Class
+  alias :new_viejo :new
+  attr_reader :trait
+
+  def self.new(*args, &bloque)
+    instance = new_viejo(*args, &bloque)
+    instance.trait&.validar_metodos(instance)
+    instance
+  end
+
   def uses(trait)
-    raise "no tiene definido los metodos requeridos" unless trait.metodos_requeridos.all? {|metodo_req| self.instance_methods.include? metodo_req }
     trait.metodos.each { |metodo| define_method(metodo.original_name, metodo.to_proc) }
+    @trait = trait
   end
 end
 

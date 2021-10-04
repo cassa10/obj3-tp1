@@ -10,7 +10,13 @@ class Trait
 
   def description
     # Eval operations
-    @operations.map {|op| op.description}.join("")
+    @operations.map { |op| op.description }.join("")
+  end
+
+  def validar_metodos(clase)
+    raise "no tiene definido los metodos requeridos" unless metodos_requeridos.all? do |metodo_req|
+      clase.instance_methods.include? metodo_req
+    end
   end
 
   def +(trait)
