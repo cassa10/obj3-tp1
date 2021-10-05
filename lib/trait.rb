@@ -54,16 +54,3 @@ class Operation
     " " + @operationType.to_s + " " + @operator.to_s
   end
 end
-
-# Not working :(
-def requires(*methods)
-  #  unless methods.all? { |met| self.respond_to? met }
-  #    throw "not implemented all required methods"
-  #  end
-end
-
-def Object.const_missing(name)
-  # Que deberia hacer aca? Ya el mensaje `uses` de clase define la constante, asi que no se que retornar
-  name
-end
-

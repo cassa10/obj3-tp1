@@ -5,14 +5,12 @@ require 'trait_api'
 describe 'Trait' do
 
   it 'cuando una clase usa un trait, luego puede responder los metodos de ese trait' do
-    #TODO: Agregar otro trait para triangular
-    metodos = (MethodParser.new do
+    #TODO: Agregar otro trait para triangu
+    un_trait = TraitBuilder.with_definition do
       def un_metodo_del_trait
         10
       end
-    end).obtener_metodos
-
-    un_trait = Trait.new(metodos)
+    end
 
     una_clase = Class.new do
       uses un_trait
@@ -24,11 +22,6 @@ describe 'Trait' do
   end
 
   it 'cuando una clase usa un trait, luego puede responder los mensajes que ya definia esta clase' do
-    metodos = (MethodParser.new do
-      def un_metodo_del_trait
-        10
-      end
-    end).obtener_metodos
 
     un_trait = Trait.new(metodos)
 
@@ -46,8 +39,10 @@ describe 'Trait' do
   end
 
   it 'cuando una clase usa un trait que requiere un metodo, este lanza una excepcion si la clase no implementa algun metodo requerido' do
+    #TODO: Revisar con profes o opiniones de esto (ESTRATEGIA DE TESTING/TRIANGULACION)
+    trait_1 = TraitBuilder.with_definition do
+      requires :metodo_requerido
 
-    metodos = (MethodParser.new do
       def un_metodo_del_trait
         10
       end
@@ -79,15 +74,13 @@ describe 'Trait' do
   end
 
   it 'cuando una clase usa un trait que requiere un metodo y esta clase define dicho metodo, puede instanciarse' do
-    metodos = (MethodParser.new do
+    trait = TraitBuilder.with_definition do
+      requires :algun_metodo
+
       def un_metodo_del_trait
         10
       end
-    end).obtener_metodos
-
-    metodos_requeridos = [:algun_metodo]
-
-    trait = Trait.new(metodos, metodos_requeridos)
+    end
 
     una_clase = Class.new do
       uses trait
@@ -102,16 +95,13 @@ describe 'Trait' do
   end
 
   it 'cuando una clase usa un trait que requiere un metodo y una superclase de esta clase define dicho metodo, puede instanciarse' do
+    trait = TraitBuilder.with_definition do
+      requires :algun_metodo
 
-    metodos = (MethodParser.new do
       def un_metodo_del_trait
         10
       end
-    end).obtener_metodos
-
-    metodos_requeridos = [:algun_metodo]
-
-    trait = Trait.new(metodos, metodos_requeridos)
+    end
 
     una_superclase = Class.new do
       def algun_metodo
@@ -127,18 +117,14 @@ describe 'Trait' do
     expect(una_instancia_de_la_clase.respond_to?(:algun_metodo)).to be_truthy
   end
 
-
   it 'cuando una clase usa un trait que requiere un metodo y esta clase usa un mixin que define dicho metodo, puede instanciarse' do
+    trait = TraitBuilder.with_definition do
+      requires :algun_metodo
 
-    metodos = (MethodParser.new do
       def un_metodo_del_trait
         10
       end
-    end).obtener_metodos
-
-    metodos_requeridos = [:algun_metodo]
-
-    trait = Trait.new(metodos, metodos_requeridos)
+    end
 
     un_mixin = Module.new do
       def algun_metodo
