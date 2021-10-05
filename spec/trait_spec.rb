@@ -23,7 +23,11 @@ describe 'Trait' do
 
   it 'cuando una clase usa un trait, luego puede responder los mensajes que ya definia esta clase' do
 
-    un_trait = Trait.new(metodos)
+    un_trait = TraitBuilder.with_definition do
+      def un_metodo_del_trait
+        10
+      end
+    end
 
     una_clase = Class.new do
       uses un_trait
@@ -46,14 +50,15 @@ describe 'Trait' do
       def un_metodo_del_trait
         10
       end
-    end).obtener_metodos
+    end
 
-    metodos_requeridos_trait1 = [:metodo_requerido]
-    #TODO: Revisar con profes o opiniones de esto (ESTRATEGIA DE TESTING/TRIANGULACION)
-    metodos_requeridos_trait2 = [:algun_metodo, :metodo_requerido]
+    trait_2 = TraitBuilder.with_definition do
+      requires :algun_metodo, :metodo_requerido
 
-    trait_1 = Trait.new(metodos, metodos_requeridos_trait1)
-    trait_2 = Trait.new(metodos, metodos_requeridos_trait2)
+      def un_metodo_del_trait
+        10
+      end
+    end
 
     expect do
       Class.new do
@@ -140,4 +145,11 @@ describe 'Trait' do
     una_instancia_de_la_clase = una_clase.new
     expect(una_instancia_de_la_clase.respond_to?(:algun_metodo)).to be_truthy
   end
+end
+
+class TraitBuilder
+  def self.with_definition(&definition)
+    TraitParser.with_body(&definition).parse
+  end
+
 end
