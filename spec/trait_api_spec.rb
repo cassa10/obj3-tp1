@@ -5,34 +5,21 @@ require 'trait_api'
 describe 'Trait API' do
 
   it 'cuando una clase usa un trait con sus metodos, luego puede responder los metodos de ese trait' do
-    trait :Trait1 do
-      def metodo_del_trait1
+    trait :UnTrait do
+      def metodo_del_trait
         10
       end
     end
 
-    trait :Trait2 do
-      def metodo_del_trait2
-        "sarasa"
-      end
+    clase = Class.new do
+      uses UnTrait
     end
 
-    clase_1 = Class.new do
-      uses Trait1
-    end
+    una_instancia_de_clase = clase.new
 
-    clase_2 = Class.new do
-      uses Trait2
-    end
+    expect(una_instancia_de_clase.respond_to?(:metodo_del_trait)).to be_truthy
+    expect(una_instancia_de_clase.metodo_del_trait).to eq 10
 
-    una_instancia_de_clase_1 = clase_1.new
-    una_instancia_de_clase_2 = clase_2.new
-
-    expect(una_instancia_de_clase_1.respond_to?(:metodo_del_trait1)).to be_truthy
-    expect(una_instancia_de_clase_1.metodo_del_trait1).to eq 10
-
-    expect(una_instancia_de_clase_2.respond_to?(:metodo_del_trait2)).to be_truthy
-    expect(una_instancia_de_clase_2.metodo_del_trait2).to eq "sarasa"
   end
 
   it 'cuando una clase usa un trait que requiere ciertos metodos y esta clase no los implementa,
@@ -53,7 +40,7 @@ describe 'Trait API' do
 
   end
 
-  it 'x' do
+  it 'cuando una clase implementa un trait con un metodo que utiliza self, luego self hace referencia a la instancia de la clase' do
     trait :UnTrait do
       requires 'un_metodo'
 

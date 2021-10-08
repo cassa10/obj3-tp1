@@ -5,7 +5,6 @@ require 'trait_api'
 describe 'Trait' do
 
   it 'cuando una clase usa un trait, luego puede responder los metodos de ese trait' do
-    #TODO: Agregar otro trait para triangu
     un_trait = TraitBuilder.with_definition do
       def un_metodo_del_trait
         10
@@ -43,16 +42,7 @@ describe 'Trait' do
   end
 
   it 'cuando una clase usa un trait que requiere un metodo, este lanza una excepcion si la clase no implementa algun metodo requerido' do
-    #TODO: Revisar con profes o opiniones de esto (ESTRATEGIA DE TESTING/TRIANGULACION)
-    trait_1 = TraitBuilder.with_definition do
-      requires :metodo_requerido
-
-      def un_metodo_del_trait
-        10
-      end
-    end
-
-    trait_2 = TraitBuilder.with_definition do
+    trait = TraitBuilder.with_definition do
       requires :algun_metodo, :metodo_requerido
 
       def un_metodo_del_trait
@@ -62,13 +52,7 @@ describe 'Trait' do
 
     expect do
       Class.new do
-        uses trait_1
-      end
-    end.to raise_error("no tiene definido los metodos requeridos")
-
-    expect do
-      Class.new do
-        uses trait_2
+        uses trait
 
         def algun_metodo
           "sarasa"
