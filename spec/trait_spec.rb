@@ -41,6 +41,53 @@ describe 'Trait' do
     expect(una_instancia_de_la_clase.un_metodo_de_la_clase).to eq 15
   end
 
+  it 'cuando una clase usa un trait y este ultimo tiene algun metodo que la clase ya lo define de alguna forma, luego este sigue utilizando los metodos ya definidos y puede responder a los nuevos metodos' do
+    trait = TraitBuilder.with_definition do
+      def metodo_del_trait
+        "from trait"
+      end
+
+      def algun_metodo
+        "from trait"
+      end
+
+      def algun_metodo_2
+        "from trait"
+      end
+
+      def algun_metodo_3
+        "from trait"
+      end
+    end
+
+    un_mixin = Module.new do
+      def algun_metodo
+        "from module"
+      end
+    end
+
+    una_super_clase = Class.new do
+      def algun_metodo_2
+        "from superclass"
+      end
+    end
+
+    una_clase = Class.new(una_super_clase) do
+      include un_mixin
+      uses trait
+      def algun_metodo_3
+        "from class"
+      end
+    end
+
+    una_instancia_de_la_clase = una_clase.new
+    expect(una_instancia_de_la_clase.metodo_del_trait).to eq "from trait"
+    expect(una_instancia_de_la_clase.algun_metodo).to eq "from module"
+    expect(una_instancia_de_la_clase.algun_metodo_2).to eq "from superclass"
+    expect(una_instancia_de_la_clase.algun_metodo_3).to eq "from class"
+
+  end
+
   it 'cuando una clase usa un trait que requiere un metodo, este lanza una excepcion si la clase no implementa algun metodo requerido' do
     trait = TraitBuilder.with_definition do
       requires :algun_metodo, :metodo_requerido

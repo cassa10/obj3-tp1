@@ -16,7 +16,9 @@ class Class
   end
 
   def uses(trait)
-    trait.metodos.each { |metodo| define_method(metodo.original_name, metodo) }
+    trait.metodos.each do |metodo|
+      define_method(metodo.original_name, metodo) unless instance_methods.any?{ |m| m.equal? metodo.original_name}
+    end
     @trait = trait
   end
 end

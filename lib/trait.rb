@@ -15,6 +15,7 @@ class Trait
 
   def validar_metodos(clase)
     raise "no tiene definido los metodos requeridos" unless metodos_requeridos.all? do |metodo_req|
+      #TODO: Fijarse de obtener todos los metodos junto a sus operaciones
       clase.instance_methods.include? metodo_req
     end
   end
@@ -24,33 +25,19 @@ class Trait
     operations = @operations.dup
     operations << Operation.new(:+, trait)
     #Devolver un nuevo Trait con el nuevo cambio, es decir, hacerlo inmutable
-    self.class.new(@cosas, operations)
+    self.class.new(@metodos, @metodos_requeridos, operations)
   end
 
-  def -(argMethods)
+  def -(arg_methods)
     #validate empty array?
-    methods = [*argMethods]
+    methods = [*arg_methods]
     operations = @operations.dup
     operations << Operation.new(:-, methods)
     #Devolver un nuevo Trait con el nuevo cambio, es decir, hacerlo inmutable
-    self.class.new(@cosas, operations)
+    self.class.new(@metodos, @metodos_requeridos, operations)
   end
 
   def to_s
     self.description
-  end
-end
-
-class Operation
-  def initialize(operationType, operator)
-    super()
-    #OperationType = :+ | :-
-    @operationType = operationType
-    #Operator = Trait | [:method]
-    @operator = operator
-  end
-
-  def description
-    " " + @operationType.to_s + " " + @operator.to_s
   end
 end
