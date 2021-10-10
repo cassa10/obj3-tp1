@@ -4,7 +4,7 @@ class Operation
 
   def initialize(operation_type, operator)
     super()
-    #OperationType = :+ | :-
+    #OperationType = :+ | :- | :<<
     @operation_type = validate_operation_type(operation_type)
     #Operator = Trait | [:method]
     @operator = operator

@@ -1,6 +1,7 @@
 OPERATION_TYPE = {
   "+": 1,
   "-": 2,
+  "<<": 3,
 }
 
 def validate_operation_type(value)
