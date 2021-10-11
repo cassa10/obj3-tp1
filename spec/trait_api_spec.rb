@@ -85,6 +85,134 @@ describe 'Trait API' do
     expect { Cosa.new.metodo_del_trait }.to raise_error
   end
 
+  it 'cuando una clase compone dos traits, luego sabe responder los metodos de ambos traits' do
+    trait :UnTrait do
+      def metodo_del_trait_1
+        10
+      end
+    end
+
+    trait :OtroTrait do
+      def metodo_del_trait_2
+        20
+      end
+    end
+
+    class UnaClase
+      uses UnTrait + OtroTrait
+    end
+
+    expect(UnaClase.new.metodo_del_trait_1).to eq(10)
+    expect(UnaClase.new.metodo_del_trait_2).to eq(20)
+  end
+
+  it 'la composicion de traits es asociativa' do
+    trait :UnTrait do
+      def metodo_del_trait_1
+        10
+      end
+    end
+
+    trait :OtroTrait do
+      def metodo_del_trait_2
+        20
+      end
+    end
+
+    trait :OtroTraitMas do
+      def metodo_del_trait_3
+        30
+      end
+    end
+
+    class UnaClase
+      uses UnTrait + (OtroTrait + OtroTraitMas)
+    end
+
+    class UnaClase2
+      uses (UnTrait + OtroTrait) + OtroTraitMas
+    end
+
+    expect(UnaClase.new.metodo_del_trait_1).to eq(10)
+    expect(UnaClase.new.metodo_del_trait_2).to eq(20)
+    expect(UnaClase.new.metodo_del_trait_3).to eq(30)
+
+    expect(UnaClase2.new.metodo_del_trait_1).to eq(10)
+    expect(UnaClase2.new.metodo_del_trait_2).to eq(20)
+    expect(UnaClase2.new.metodo_del_trait_3).to eq(30)
+  end
+
+  it 'cuando una clase compone dos traits con metodos requeridos y este no implementa alguno, entonces se lanza una excepcion al tratar de utilizarlo' do
+    trait :UnTrait do
+      requires :metodo_del_trait_2
+
+      def metodo_del_trait_1
+        metodo_del_trait_2
+      end
+    end
+
+    trait :OtroTrait do
+      requires :metodo_requerido
+
+      def metodo_del_trait_2
+        metodo_requerido
+      end
+    end
+
+    class UnaClase
+      uses UnTrait + OtroTrait
+    end
+
+    expect(UnaClase.new.respond_to? :metodo_del_trait_1).to be_truthy
+    expect(UnaClase.new.respond_to? :metodo_del_trait_2).to be_truthy
+    expect { UnaClase.new.metodo_del_trait_1 }.to raise_error 'Metodo requerido no implementado'
+    expect { UnaClase.new.metodo_del_trait_2 }.to raise_error 'Metodo requerido no implementado'
+  end
+
+  it 'cuando una clase compone dos traits que implementan el mismo metodo, se levanta una excepcion' do
+    trait :UnTrait do
+
+      def un_metodo
+        "Vengo de UnTrait"
+      end
+    end
+
+    trait :OtroTrait do
+
+      def un_metodo
+        "Vengo de OtroTrait"
+      end
+    end
+
+    expect do
+      class UnaClase
+        uses UnTrait + OtroTrait
+      end
+    end.to raise_error("Conflicto entre metodos de traits")
+  end
+
+  it 'cuando una clase compone dos traits que implementan el mismo metodo, se levanta una excepcion' do
+    trait :UnTrait do
+
+      def un_metodo
+        "Vengo de UnTrait"
+      end
+    end
+
+    trait :OtroTrait do
+
+      def un_metodo
+        "Vengo de OtroTrait"
+      end
+    end
+
+    expect do
+      class UnaClase
+        uses UnTrait + OtroTrait
+      end
+    end.to raise_error("Conflicto entre metodos de traits")
+  end
+
 end
 
 =begin

@@ -1,5 +1,6 @@
+require 'operation'
+
 class Trait
-  attr_reader :metodos, :metodos_requeridos
 
   def initialize(metodos, metodos_requeridos = [], operaciones = [])
     super()
@@ -10,14 +11,22 @@ class Trait
 
   def description
     # Eval operations
-    @operations.map { |op| op.description }.join("")
+    @operations.map(&:description).join('')
   end
 
-  def validar_metodos(clase)
-    raise "no tiene definido los metodos requeridos" unless metodos_requeridos.all? do |metodo_req|
-      #TODO: Fijarse de obtener todos los metodos junto a sus operaciones
-      clase.instance_methods.include? metodo_req
+  def union_de_metodos(metodos_de_trait, metodos_de_operacion)
+    metodos_de_trait.each do |metodo|
+      raise 'Conflicto entre metodos de traits' if metodos_de_operacion.any? { |m_op| m_op.original_name.eql? metodo.original_name }
     end
+    metodos_de_trait | metodos_de_operacion
+  end
+
+  def metodos
+    union_de_metodos(@metodos, @operations.flat_map(&:metodos))
+  end
+
+  def metodos_requeridos
+    @metodos_requeridos | @operations.flat_map(&:metodos_requeridos)
   end
 
   def +(trait)
