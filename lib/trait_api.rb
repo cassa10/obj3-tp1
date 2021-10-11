@@ -5,21 +5,20 @@ def trait(traitName, &definitions)
 end
 
 class Class
-  alias :new_viejo :new
-  attr_reader :trait
-
-  def self.new(*args, &bloque)
-    # TODO puede que no necesite explotar aca, sino que la evaluacion de si los metodos los tiene o no se puede hacer cuando se instancie quizas
-    instance = new_viejo(*args, &bloque)
-    instance.trait&.validar_metodos(instance)
-    instance
-  end
 
   def uses(trait)
     trait.metodos.each do |metodo|
-      define_method(metodo.original_name, metodo) unless instance_methods.any?{ |m| m.equal? metodo.original_name}
+      define_method(metodo.original_name, metodo) unless is_method_defined(metodo.original_name)
     end
-    @trait = trait
+    trait.metodos_requeridos.each do |simbolo|
+      define_method(simbolo) { raise 'Metodo requerido no implementado' } unless is_method_defined(simbolo)
+    end
+  end
+
+  private
+
+  def is_method_defined(simbolo)
+    instance_methods.any? { |m| m.equal? simbolo }
   end
 end
 

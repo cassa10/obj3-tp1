@@ -75,6 +75,7 @@ describe 'Trait' do
     una_clase = Class.new(una_super_clase) do
       include un_mixin
       uses trait
+
       def algun_metodo_3
         "from class"
       end
@@ -93,19 +94,19 @@ describe 'Trait' do
       requires :algun_metodo, :metodo_requerido
 
       def un_metodo_del_trait
-        10
+        metodo_requerido << algun_metodo
       end
     end
 
-    expect do
-      Class.new do
-        uses trait
+    clase = Class.new do
+      uses trait
 
-        def algun_metodo
-          "sarasa"
-        end
+      def algun_metodo
+        "sarasa"
       end
-    end.to raise_error("no tiene definido los metodos requeridos")
+    end
+
+    expect { clase.new.un_metodo_del_trait }.to raise_error("Metodo requerido no implementado")
 
   end
 
