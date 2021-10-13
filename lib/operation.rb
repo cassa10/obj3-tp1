@@ -1,4 +1,5 @@
 require 'operation_type'
+require 'trait_method'
 
 class Operation
   attr_reader :operator

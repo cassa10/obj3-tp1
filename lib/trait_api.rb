@@ -1,14 +1,14 @@
 require 'trait'
 
-def trait(traitName, &definitions)
-  Object.const_set(traitName, TraitParser.new(&definitions).parse)
+def trait(trait_name, &definitions)
+  Object.const_set(trait_name, TraitParser.new(trait_name, &definitions).parse)
 end
 
 class Class
 
   def uses(trait)
-    trait.metodos.each do |metodo|
-      define_method(metodo.original_name, metodo) unless is_method_defined(metodo.original_name)
+    trait.metodos.each do |metodo_de_trait|
+      define_method(metodo_de_trait.metodo.original_name, metodo_de_trait.metodo) unless is_method_defined(metodo_de_trait.metodo.original_name)
     end
     trait.metodos_requeridos.each do |simbolo|
       define_method(simbolo) { raise 'Metodo requerido no implementado' } unless is_method_defined(simbolo)
@@ -24,9 +24,10 @@ end
 
 class TraitParser
 
-  def initialize(&metodos_bloque)
+  def initialize(nombre_trait, &metodos_bloque)
     super()
     @methods = metodos_bloque
+    @nombre_trait = nombre_trait
   end
 
   def parse
@@ -39,16 +40,12 @@ class TraitParser
     end
     modulo_temporal.module_eval &@methods
 
-    Trait.new(obtener_metodos(modulo_temporal), nuevos_metodos_requeridos)
+    Trait.new(@nombre_trait, obtener_metodos(modulo_temporal), nuevos_metodos_requeridos)
   end
 
   def obtener_metodos(clase_temporal)
     metodos_a_agregar = clase_temporal.instance_methods(false)
     metodos_a_agregar.map { |metodo| clase_temporal.instance_method(metodo) }
-  end
-
-  def self.with_body(&body)
-    self.new(&body)
   end
 
   private

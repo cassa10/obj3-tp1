@@ -181,7 +181,7 @@ end
 
 class TraitBuilder
   def self.with_definition(&definition)
-    TraitParser.with_body(&definition).parse
+    TraitParser.new(:Trait, &definition).parse
   end
 
 end

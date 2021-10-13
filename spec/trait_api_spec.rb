@@ -191,26 +191,19 @@ describe 'Trait API' do
     end.to raise_error("Conflicto entre metodos de traits")
   end
 
-  it 'cuando una clase compone dos traits que implementan el mismo metodo, se levanta una excepcion' do
+  it 'cuando una clase compone dos veces el mismo trait, luego la clase hereda los mensajes correctamente' do
     trait :UnTrait do
 
       def un_metodo
-        "Vengo de UnTrait"
+        10
       end
     end
 
-    trait :OtroTrait do
-
-      def un_metodo
-        "Vengo de OtroTrait"
-      end
+    class UnaClase
+      uses UnTrait + UnTrait
     end
 
-    expect do
-      class UnaClase
-        uses UnTrait + OtroTrait
-      end
-    end.to raise_error("Conflicto entre metodos de traits")
+    expect(UnaClase.new.un_metodo).to eq(10)
   end
 
 end
