@@ -163,8 +163,8 @@ describe 'Trait API' do
       uses UnTrait + OtroTrait
     end
 
-    expect(UnaClase.new.respond_to? :metodo_del_trait_1).to be_truthy
-    expect(UnaClase.new.respond_to? :metodo_del_trait_2).to be_truthy
+    expect(UnaClase.new.respond_to?(:metodo_del_trait_1)).to be_truthy
+    expect(UnaClase.new.respond_to?(:metodo_del_trait_2)).to be_truthy
     expect { UnaClase.new.metodo_del_trait_1 }.to raise_error 'Metodo requerido no implementado'
     expect { UnaClase.new.metodo_del_trait_2 }.to raise_error 'Metodo requerido no implementado'
   end
@@ -206,8 +206,25 @@ describe 'Trait API' do
     expect(UnaClase.new.un_metodo).to eq(10)
   end
 
-end
+  it 'cuando una clase compone un trait excluyendo un metodo, luego la clase no sabe responder a este metodo' do
+    trait :UnTrait do
+      def un_metodo
+        10
+      end
 
+      def otro_metodo
+        50
+      end
+    end
+
+    class UnaClase
+      uses UnTrait - :otro_metodo
+    end
+
+    expect(UnaClase.new.respond_to?(:otro_metodo)).to be_falsey
+  end
+
+end
 =begin
   comentado hasta que pasemos a operaciones
   it 'sarasa' do
