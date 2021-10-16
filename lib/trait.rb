@@ -14,7 +14,7 @@ class Trait
 
   def description
     # Eval operations
-    @operations.map(&:description).join('')
+    @nombre.to_s + @operations.map(&:description).join('')
   end
 
   def metodos
