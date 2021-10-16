@@ -191,7 +191,7 @@ describe 'Trait API' do
     end.to raise_error("Conflicto entre metodos de traits")
   end
 
-  it 'cuando una clase compone dos veces el mismo trait, luego la clase hereda los mensajes correctamente' do
+  it 'cuando una clase compone el mismo trait varias veces, luego la clase sabe responder los mensajes correctamente' do
     trait :UnTrait do
 
       def un_metodo
@@ -204,6 +204,28 @@ describe 'Trait API' do
     end
 
     expect(UnaClase.new.un_metodo).to eq(10)
+  end
+
+  it 'cuando una clase compone el varios trait varias veces, luego la clase sabe responder los mensajes correctamente' do
+    trait :UnTrait do
+      def un_metodo
+        "un_trait"
+      end
+    end
+
+    trait :OtroTrait do
+      def otro_metodo
+        "otro_trait"
+      end
+    end
+
+    class UnaClase
+      uses (UnTrait + OtroTrait) + (OtroTrait + UnTrait)
+    end
+
+    instancia_de_una_clase = UnaClase.new
+    expect(instancia_de_una_clase.un_metodo).to eq("un_trait")
+    expect(instancia_de_una_clase.otro_metodo).to eq("otro_trait")
   end
 
   it 'cuando una clase compone un trait excluyendo un metodo, luego la clase no sabe responder a este metodo' do
@@ -221,9 +243,83 @@ describe 'Trait API' do
       uses UnTrait - :otro_metodo
     end
 
-    expect(UnaClase.new.respond_to?(:otro_metodo)).to be_falsey
+    instancia_de_una_clase = UnaClase.new
+    expect(instancia_de_una_clase.respond_to?(:un_metodo)).to be_truthy
+    expect(instancia_de_una_clase.respond_to?(:otro_metodo)).to be_falsey
   end
 
+  it 'cuando una clase compone un trait excluyendo una lista de metodos, luego la clase no sabe responder a esta lista metodos excluida' do
+    trait :UnTrait do
+      def un_metodo
+        10
+      end
+
+      def otro_metodo
+        50
+      end
+
+      def sarasa
+        1234
+      end
+    end
+
+    class UnaClase
+      uses UnTrait - [:otro_metodo, :sarasa]
+    end
+
+    instancia_de_una_clase = UnaClase.new
+    expect(instancia_de_una_clase.respond_to?(:un_metodo)).to be_truthy
+    expect(instancia_de_una_clase.respond_to?(:otro_metodo)).to be_falsey
+    expect(instancia_de_una_clase.respond_to?(:sarasa)).to be_falsey
+  end
+
+  it 'cuando una clase usa un trait excluyendo sucesivamente metodos, luego la clase no sabe responder a estos metodos excluidos' do
+    trait :UnTrait do
+      def un_metodo
+        10
+      end
+
+      def otro_metodo
+        50
+      end
+
+      def sarasa
+        1234
+      end
+
+      def sarasa2
+        777
+      end
+    end
+
+    class UnaClase
+      uses UnTrait - :otro_metodo - :sarasa - :sarasa2
+    end
+
+    instancia_de_una_clase = UnaClase.new
+    expect(instancia_de_una_clase.respond_to?(:un_metodo)).to be_truthy
+    expect(instancia_de_una_clase.respond_to?(:otro_metodo)).to be_falsey
+    expect(instancia_de_una_clase.respond_to?(:sarasa)).to be_falsey
+    expect(instancia_de_una_clase.respond_to?(:sarasa2)).to be_falsey
+  end
+
+  it 'cuando una clase usa un trait y redefine un metodo que implementa dicho trait con otro nombre, luego la clase sabe responder al metodo original y al renombrado' do
+    trait :UnTrait do
+      def un_metodo
+        "un_trait"
+      end
+    end
+
+    class UnaClase
+      uses UnTrait << {un_metodo: :un_metodo_renombrado}
+    end
+
+    instancia_de_una_clase = UnaClase.new
+    expect(instancia_de_una_clase.un_metodo).to eq("un_trait")
+    expect(instancia_de_una_clase.un_metodo_renombrado).to eq("un_trait")
+  end
+
+  #TODO: Testear mezcla de operaciones (+) (-) (<<)
 end
 =begin
   comentado hasta que pasemos a operaciones

@@ -19,7 +19,7 @@ class Trait
 
   def metodos
     metodos_propios = @metodos.map { |metodo| TraitMethod.new(metodo, @nombre) }
-    metodos_finales = [].push(*metodos_propios)
+    metodos_finales = [*metodos_propios]
     @operations.each { |operation| metodos_finales = operation.aplicar_con(metodos_finales) }
     metodos_finales
   end
@@ -41,6 +41,13 @@ class Trait
     methods = [*arg_methods]
     operations = @operations.dup
     operations << Operation.new(:-, methods)
+    #Devolver un nuevo Trait con el nuevo cambio, es decir, hacerlo inmutable
+    self.class.new(@nombre, @metodos, @metodos_requeridos, operations)
+  end
+
+  def <<(metodos_a_renombrar)
+    operations = @operations.dup
+    operations << Operation.new(:<<, metodos_a_renombrar)
     #Devolver un nuevo Trait con el nuevo cambio, es decir, hacerlo inmutable
     self.class.new(@nombre, @metodos, @metodos_requeridos, operations)
   end
