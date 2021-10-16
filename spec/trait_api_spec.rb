@@ -652,6 +652,28 @@ describe 'Trait API' do
     UnaClase.new.metodo_1(mock)
   end
 
+  it "cuando una clase implementa la composicion de dos traits con metodos conflictivos, puedo usar una
+      estrategia para que se combinen todas las implementaciones y se retorne el resultado" do
+    trait :UnTrait do
+      def metodo_1(n)
+        n + 10
+      end
+    end
+
+    trait :OtroTrait do
+      def metodo_1(n)
+        n + 20
+      end
+    end
+
+    class UnaClase
+      uses UnTrait + OtroTrait.on_conflict(InjectReduce.new(:metodo_1, 0, proc { |acc, n| acc + n }))
+    end
+
+    instancia = UnaClase.new
+    expect(instancia.metodo_1(100)).to eq(230)
+  end
+
   it 'cuando se le pide la description a un trait, luego este devuelve su nombre junto a el conjunto de operaciones aplicado' do
     trait :UnTrait do
       def m1
