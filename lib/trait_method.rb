@@ -29,4 +29,17 @@ class TraitMethod
     metodo_duplicado = modulo_temporal.instance_method(nombre)
     TraitMethod.new(metodo_duplicado, @nombre_del_trait)
   end
+
+  def combinar_con(otro)
+    este_metodo = @metodo.clone
+    otro_metodo = otro.metodo.clone
+    modulo_temporal = Module.new
+
+    modulo_temporal.define_method(@metodo.original_name) do |*args|
+      este_metodo.bind(self).call(*args)
+      otro_metodo.bind(self).call(*args)
+    end
+    metodo_nuevo = modulo_temporal.instance_method(@metodo.original_name)
+    TraitMethod.new(metodo_nuevo, @nombre_del_trait)
+  end
 end

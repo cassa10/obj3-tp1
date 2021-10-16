@@ -1,6 +1,7 @@
 require 'rspec'
 require 'trait'
 require 'trait_api'
+require 'estrategia_de_conflictos'
 
 describe 'Trait API' do
 
@@ -319,7 +320,7 @@ describe 'Trait API' do
     end
 
     class UnaClase
-      uses UnTrait << {un_metodo_0: :un_metodo_renombrado_0, un_metodo_2: :un_metodo_renombrado_2}
+      uses UnTrait << { un_metodo_0: :un_metodo_renombrado_0, un_metodo_2: :un_metodo_renombrado_2 }
     end
 
     instancia_de_una_clase = UnaClase.new
@@ -330,7 +331,8 @@ describe 'Trait API' do
     expect(instancia_de_una_clase.un_metodo_renombrado_2).to eq(instancia_de_una_clase)
   end
 
-  it 'cuando una clase usa un trait y este trait redefine metodos que no implementa dicho trait con otro nombre, luego se levanta una excepcion que el metodo a renombrar no existe en el trait a operar' do
+  it 'cuando una clase usa un trait y este trait redefine metodos que no implementa dicho trait con otro nombre,
+      luego se levanta una excepcion que el metodo a renombrar no existe en el trait a operar' do
     trait :UnTrait do
       def un_metodo_0
         "un_trait_met_0"
@@ -339,7 +341,7 @@ describe 'Trait API' do
 
     expect do
       class UnaClase
-        uses UnTrait << {metodo_inexistente: :metodo_renombrado}
+        uses UnTrait << { metodo_inexistente: :metodo_renombrado }
 
         def metodo_inexistente
           "sarasa"
@@ -349,13 +351,13 @@ describe 'Trait API' do
 
     expect do
       class OtraClase
-        uses UnTrait << {un_metodo_0: :renombrar_metodo_0, metodo_inexistente: :metodo_renombrado}
+        uses UnTrait << { un_metodo_0: :renombrar_metodo_0, metodo_inexistente: :metodo_renombrado }
       end
     end.to raise_error("Metodo :metodo_inexistente no esta definido en el trait")
   end
 
-  it 'cuando una clase implementa la composicion de dos traits donde el alguno de estos se le esta substrayendo metodos, entonces
-        la clase implementa la union de los metodos del que se le esta substrayendo juntos con lo del otro trait' do
+  it 'cuando una clase implementa la composicion de dos traits donde alguno de estos se le esta substrayendo metodos, entonces
+        la clase implementa la union de los metodos del que se le esta substrayendo juntos con los del otro trait' do
     trait :UnTrait do
       def un_trait_metodo
         "un_trait"
@@ -366,9 +368,11 @@ describe 'Trait API' do
       def otro_trait_metodo_0
         "otro_trait"
       end
+
       def otro_trait_metodo_1
         "otro_trait"
       end
+
       def otro_trait_metodo_2
         "otro_trait"
       end
@@ -402,6 +406,7 @@ describe 'Trait API' do
       def un_trait_metodo_1
         "un_trait"
       end
+
       def un_trait_metodo_2
         "un_trait"
       end
@@ -411,6 +416,7 @@ describe 'Trait API' do
       def otro_trait_metodo_1
         "otro_trait"
       end
+
       def otro_trait_metodo_2
         "otro_trait"
       end
@@ -440,17 +446,18 @@ describe 'Trait API' do
       def otro_trait_metodo_1
         "otro_trait_met_1"
       end
+
       def otro_trait_metodo_2
         "otro_trait_met_2"
       end
     end
 
     class UnaClase
-      uses UnTrait + (OtroTrait << {otro_trait_metodo_1: :renombre_met_1, otro_trait_metodo_2: :renombre_met_2})
+      uses UnTrait + (OtroTrait << { otro_trait_metodo_1: :renombre_met_1, otro_trait_metodo_2: :renombre_met_2 })
     end
 
     class OtraClase
-      uses (OtroTrait << {otro_trait_metodo_1: :renombre_met_1, otro_trait_metodo_2: :renombre_met_2}) + UnTrait
+      uses (OtroTrait << { otro_trait_metodo_1: :renombre_met_1, otro_trait_metodo_2: :renombre_met_2 }) + UnTrait
     end
 
     una_instancia_de_una_clase = UnaClase.new
@@ -481,13 +488,14 @@ describe 'Trait API' do
       def otro_trait_metodo_1
         "otro_trait_met_1"
       end
+
       def otro_trait_metodo_2
         "otro_trait_met_2"
       end
     end
 
     class UnaClase
-      uses (OtroTrait + UnTrait) << {otro_trait_metodo_1: :renombre_met_1, un_trait_metodo: :renombre_met_2}
+      uses (OtroTrait + UnTrait) << { otro_trait_metodo_1: :renombre_met_1, un_trait_metodo: :renombre_met_2 }
     end
 
     una_instancia_de_una_clase = UnaClase.new
@@ -505,16 +513,18 @@ describe 'Trait API' do
       def trait_metodo_1
         "trait_met_1"
       end
+
       def trait_metodo_2
         "trait_met_2"
       end
+
       def trait_metodo_3
         "trait_met_3"
       end
     end
 
     class UnaClase
-      uses (UnTrait << {trait_metodo_1: :renombre_met_1, trait_metodo_3: :renombre_met_3}) - [:trait_metodo_3, :renombre_met_1]
+      uses (UnTrait << { trait_metodo_1: :renombre_met_1, trait_metodo_3: :renombre_met_3 }) - [:trait_metodo_3, :renombre_met_1]
     end
 
     una_instancia_de_una_clase = UnaClase.new
@@ -532,6 +542,7 @@ describe 'Trait API' do
       def trait_metodo_1
         "trait_met_1"
       end
+
       def trait_metodo_2
         "trait_met_2"
       end
@@ -539,7 +550,7 @@ describe 'Trait API' do
 
     expect do
       class UnaClase
-        uses UnTrait - :trait_metodo_1 << {trait_metodo_2: :trait_metodo_2_renombrado, trait_metodo_1: :trait_metodo_1_renombrado}
+        uses UnTrait - :trait_metodo_1 << { trait_metodo_2: :trait_metodo_2_renombrado, trait_metodo_1: :trait_metodo_1_renombrado }
       end
     end.to raise_error("Metodo :trait_metodo_1 no esta definido en el trait")
   end
@@ -556,13 +567,14 @@ describe 'Trait API' do
       def metodo_1
         "otro_trait_met_1"
       end
+
       def metodo_2
         "otro_trait_met_2"
       end
     end
 
     class UnaClase
-      uses UnTrait + ((OtroTrait << {metodo_1: :metodo_1_from_otro_trait}) - :metodo_1)
+      uses UnTrait + ((OtroTrait << { metodo_1: :metodo_1_from_otro_trait }) - :metodo_1)
     end
 
     una_instancia_de_una_clase = UnaClase.new
@@ -570,6 +582,74 @@ describe 'Trait API' do
     expect(una_instancia_de_una_clase.metodo_1).to eq("un_trait")
     expect(una_instancia_de_una_clase.metodo_1_from_otro_trait).to eq("otro_trait_met_1")
     expect(una_instancia_de_una_clase.metodo_2).to eq("otro_trait_met_2")
+  end
+
+  it "cuando una clase implementa la composicion de dos traits con metodos conflictivos, puedo usar una
+      estrategia para que se use cualquiera de las dos implementaciones" do
+    trait :UnTrait do
+      def metodo_1
+        "un_trait"
+      end
+    end
+
+    trait :OtroTrait do
+      def metodo_1
+        "otro_trait"
+      end
+    end
+
+    class UnaClase
+      uses UnTrait + OtroTrait.on_conflict(CualquierImplementacion.new)
+    end
+
+    instancia = UnaClase.new
+    expect(instancia.respond_to?(:metodo_1)).to be_truthy
+    expect(instancia.metodo_1 == "un_trait" || instancia.metodo_1 == "otro_trait").to be_truthy
+  end
+
+  it "cuando una clase implementa la composicion de dos traits con metodos conflictivos y una estrategia para resolverlos
+      pero los metodos que entran en conflicto no son los contemplados por la estrategia, se levanta una excepcion" do
+    trait :UnTrait do
+      def metodo_1
+        "un_trait"
+      end
+    end
+
+    trait :OtroTrait do
+      def metodo_1
+        "otro_trait"
+      end
+    end
+
+    expect do
+      class UnaClase
+        uses UnTrait + OtroTrait.on_conflict(CualquierImplementacion.new(:metodo_2))
+      end
+    end.to raise_error("Conflicto entre metodos de traits")
+  end
+
+  it "cuando una clase implementa la composicion de dos traits con metodos conflictivos, puedo usar una
+      estrategia para que se ejecuten todas las implementaciones" do
+    mock = double
+    expect(mock).to receive(:llamar).twice
+
+    trait :UnTrait do
+      def metodo_1(objeto)
+        objeto.llamar
+      end
+    end
+
+    trait :OtroTrait do
+      def metodo_1(objeto)
+        objeto.llamar
+      end
+    end
+
+    class UnaClase
+      uses UnTrait + OtroTrait.on_conflict(ImplementacionDeAmbos.new(:metodo_1))
+    end
+
+    UnaClase.new.metodo_1(mock)
   end
 
   it 'cuando se le pide la description a un trait, luego este devuelve su nombre junto a el conjunto de operaciones aplicado' do
@@ -597,8 +677,8 @@ describe 'Trait API' do
     expect((UnTrait + OtroTrait).description).to eq "UnTrait + OtroTrait"
     expect((UnTrait - :m1 + OtroTrait).description).to eq "UnTrait - [:m1] + OtroTrait"
     expect((UnTrait - [:m1, :m2] + OtroTrait).description).to eq "UnTrait - [:m1, :m2] + OtroTrait"
-    expect((OtroTrait << {otro_m1: :renombre_m1}).description).to eq "OtroTrait << {:otro_m1=>:renombre_m1}"
-    expect((UnTrait << {m1: :renombre_m1, m3: :renombre_m3}).description).to eq "UnTrait << {:m1=>:renombre_m1, :m3=>:renombre_m3}"
+    expect((OtroTrait << { otro_m1: :renombre_m1 }).description).to eq "OtroTrait << {:otro_m1=>:renombre_m1}"
+    expect((UnTrait << { m1: :renombre_m1, m3: :renombre_m3 }).description).to eq "UnTrait << {:m1=>:renombre_m1, :m3=>:renombre_m3}"
   end
 
 end
