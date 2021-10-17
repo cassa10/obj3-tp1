@@ -699,7 +699,7 @@ describe 'Trait API' do
     class UnaClase
       uses UnTrait + OtroTrait.on_conflict([
                                              InjectReduce.new(:metodo_1, 0, proc { |acc, n| acc + n }),
-                                             CualquierImplementacion.new
+                                             CualquierImplementacion.new(:metodo_2)
                                            ])
     end
 
