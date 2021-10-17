@@ -11,7 +11,7 @@ jobs:
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1.67.0
       with:
-        ruby-version: 2.7.2
+        ruby-version: 2.6.3
     - name: Install dependencies
       run: bundle install
     - name: Run tests
