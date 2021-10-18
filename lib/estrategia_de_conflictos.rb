@@ -1,3 +1,5 @@
+require 'combinable'
+
 class EstrategiaDeConflictos
   def initialize(metodos = [])
     super()
@@ -9,22 +11,25 @@ class EstrategiaDeConflictos
   end
 
   def manejar_conflicto(metodo, metodos_existentes, metodos_a_agregar) end
+
 end
 
 class CualquierImplementacion < EstrategiaDeConflictos
 end
 
-#TODO: Refactorizar logica de "manejar_conflicto" codigo repetido
 class ImplementacionDeAmbos < EstrategiaDeConflictos
+  include Combinable
+
   def manejar_conflicto(metodo, metodos_existentes, metodos_a_agregar)
     metodo_combinado = metodo.combinar_con(metodos_a_agregar.first { |metodo_a_agregar| metodo_a_agregar.mismo_simbolo?(metodo) })
-    metodos_existentes.reject! { |m| m.metodo.original_name == metodo.metodo.original_name }
-    metodos_a_agregar.reject! { |m| m.metodo.original_name == metodo.metodo.original_name }
-    metodos_a_agregar << metodo_combinado
+    reemplazar_metodo(metodo, metodo_combinado, metodos_a_agregar, metodos_existentes)
   end
+
 end
 
 class InjectReduce < EstrategiaDeConflictos
+  include Combinable
+
   def initialize(metodos = [], valor_inicial, funcion_combinadora)
     super(metodos)
     @valor_inicial = valor_inicial
@@ -34,13 +39,13 @@ class InjectReduce < EstrategiaDeConflictos
   def manejar_conflicto(metodo, metodos_existentes, metodos_a_agregar)
     metodo_de_operacion = metodos_a_agregar.first { |metodo_a_agregar| metodo_a_agregar.mismo_simbolo?(metodo) }
     resultado_de_reduccion = metodo.reducir_con(metodo_de_operacion, @valor_inicial, @funcion_combinadora)
-    metodos_existentes.reject! { |m| m.metodo.original_name == metodo.metodo.original_name }
-    metodos_a_agregar.reject! { |m| m.metodo.original_name == metodo.metodo.original_name }
-    metodos_a_agregar << resultado_de_reduccion
+    reemplazar_metodo(metodo, resultado_de_reduccion, metodos_a_agregar, metodos_existentes)
   end
 end
 
 class Personalizable < EstrategiaDeConflictos
+  include Combinable
+
   def initialize(metodos = [], bloque_combinador)
     super(metodos)
     @proc_resolver_conflicto = bloque_combinador
@@ -49,12 +54,11 @@ class Personalizable < EstrategiaDeConflictos
   def manejar_conflicto(metodo, metodos_existentes, metodos_a_agregar)
     metodo_de_operacion = metodos_a_agregar.first { |metodo_a_agregar| metodo_a_agregar.mismo_simbolo?(metodo) }
     resultado_de_combinacion = combinar(metodo, metodo_de_operacion)
-    metodos_existentes.reject! { |m| m.metodo.original_name == metodo.metodo.original_name }
-    metodos_a_agregar.reject! { |m| m.metodo.original_name == metodo.metodo.original_name }
-    metodos_a_agregar << resultado_de_combinacion
+    reemplazar_metodo(metodo, resultado_de_combinacion, metodos_a_agregar, metodos_existentes)
   end
 
   private
+
   def combinar(metodo1, metodo2)
     modulo_temporal = Module.new
     proc_resolver_conflicto = @proc_resolver_conflicto
