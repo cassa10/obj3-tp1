@@ -66,7 +66,7 @@ class Operation
     end
 
     metodos_conflictivos.each do |metodo|
-      estrategia_correcta = estrategias_de_conflictos.find { |estrategia| estrategia.es_para metodo.metodo.original_name }
+      estrategia_correcta = estrategias_de_conflictos.find { |estrategia| estrategia.es_para metodo.nombre }
       raise 'Conflicto entre metodos de traits' if estrategia_correcta.nil?
 
       estrategia_correcta.manejar_conflicto(metodo, metodos_de_trait, metodos_de_operacion)

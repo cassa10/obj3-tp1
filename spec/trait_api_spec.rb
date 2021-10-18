@@ -674,6 +674,34 @@ describe 'Trait API' do
     expect(instancia.metodo_1(100)).to eq(230)
   end
 
+  it "cuando una clase implementa la composicion de multiples traits con metodos conflictivos, puedo usar una
+      estrategia para que se combinen todas las implementaciones y se retorne el resultado" do
+    trait :UnTrait do
+      def metodo_1(s)
+        s + " untrait"
+      end
+    end
+
+    trait :OtroTrait do
+      def metodo_1(s)
+        s + " otrotrait"
+      end
+    end
+
+    trait :OtroTraitMas do
+      def metodo_1(s)
+        s + " otrotraitmas"
+      end
+    end
+
+    class UnaClase
+      uses UnTrait + OtroTrait + OtroTraitMas.on_conflict(InjectReduce.new(:metodo_1, "", proc { |acc, s| acc + s }))
+    end
+
+    instancia = UnaClase.new
+    expect(instancia.metodo_1("hola")).to eq("hola untraithola otrotraithola otrotraitmas")
+  end
+
   it "cuando una clase implementa la composicion de dos traits con algun metodo conflictivo y este se define que se resuelve con una
         estrategia personalizable, luego se resuelve dicho conflicto con esta nueva definicion creada en la estrategia" do
     trait :UnTrait do
@@ -750,7 +778,7 @@ describe 'Trait API' do
       uses UnTrait + OtroTrait.on_conflict([
                                              InjectReduce.new(:metodo_1, 0, proc { |acc, n| acc + n }),
                                              CualquierImplementacion.new(:metodo_2),
-                                             Personalizable.new(:metodo_3, proc { |_, _, n| n } )
+                                             Personalizable.new(:metodo_3, proc { |_, _, n| n })
                                            ])
     end
 
