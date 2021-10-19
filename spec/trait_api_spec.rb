@@ -29,7 +29,6 @@ describe 'Trait API' do
 
     una_instancia_de_clase = UnaClase.new
 
-    expect(una_instancia_de_clase.respond_to?(:metodo_del_trait)).to be_truthy
     expect(una_instancia_de_clase.metodo_del_trait).to eq 10
 
   end
@@ -207,7 +206,7 @@ describe 'Trait API' do
     expect(UnaClase.new.un_metodo).to eq(10)
   end
 
-  it 'cuando una clase compone el varios trait varias veces, luego la clase sabe responder los mensajes correctamente' do
+  it 'cuando una clase compone varios trait varias veces, luego la clase sabe responder los mensajes correctamente' do
     trait :UnTrait do
       def un_metodo
         "un_trait"
@@ -249,7 +248,7 @@ describe 'Trait API' do
     expect(instancia_de_una_clase.respond_to?(:otro_metodo)).to be_falsey
   end
 
-  it 'cuando una clase compone un trait excluyendo una lista de metodos, luego la clase no sabe responder a esta lista metodos excluida' do
+  it 'cuando una clase compone un trait excluyendo una lista de metodos, luego la instancia no sabe responder a los metodos de la lista' do
     trait :UnTrait do
       def un_metodo
         10
@@ -274,68 +273,84 @@ describe 'Trait API' do
     expect(instancia_de_una_clase.respond_to?(:sarasa)).to be_falsey
   end
 
-  it 'cuando una clase usa un trait excluyendo sucesivamente metodos, luego la clase no sabe responder a estos metodos excluidos' do
+  it 'cuando una clase usa un trait excluyendo sucesivamente metodos, luego la instancia de la clase no sabe responder a estos metodos excluidos' do
     trait :UnTrait do
-      def un_metodo
+      def metodo_1
         10
       end
 
-      def otro_metodo
+      def metodo_2
         50
       end
 
-      def sarasa
+      def metodo_3
         1234
       end
 
-      def sarasa2
+      def metodo_4
         777
       end
     end
 
     class UnaClase
-      uses UnTrait - :otro_metodo - :sarasa - :sarasa2
+      uses UnTrait - :metodo_2 - :metodo_3 - :metodo_4
     end
 
     instancia_de_una_clase = UnaClase.new
-    expect(instancia_de_una_clase.respond_to?(:un_metodo)).to be_truthy
-    expect(instancia_de_una_clase.respond_to?(:otro_metodo)).to be_falsey
-    expect(instancia_de_una_clase.respond_to?(:sarasa)).to be_falsey
-    expect(instancia_de_una_clase.respond_to?(:sarasa2)).to be_falsey
+    expect(instancia_de_una_clase.respond_to?(:metodo_1)).to be_truthy
+    expect(instancia_de_una_clase.respond_to?(:metodo_2)).to be_falsey
+    expect(instancia_de_una_clase.respond_to?(:metodo_3)).to be_falsey
+    expect(instancia_de_una_clase.respond_to?(:metodo_4)).to be_falsey
   end
 
-  it 'cuando una clase usa un trait y redefine metodos que implementa dicho trait con otros nombres, luego la clase sabe responder a los metodos originales y a los renombrados' do
+  it 'cuando una clase usa un trait y redefine metodos que implementa dicho trait con otros nombres, luego la instancia
+      de clase sabe responder a los metodos originales y a los renombrados' do
     trait :UnTrait do
-      def un_metodo_0
-        "un_trait_met_0"
-      end
-
       def un_metodo_1
         "un_trait_met_1"
       end
 
       def un_metodo_2
+        "un_trait_met_2"
+      end
+
+      def un_metodo_3
         self
       end
     end
 
     class UnaClase
-      uses UnTrait << { un_metodo_0: :un_metodo_renombrado_0, un_metodo_2: :un_metodo_renombrado_2 }
+      uses UnTrait << { un_metodo_1: :un_metodo_renombrado_1, un_metodo_3: :un_metodo_renombrado_3 }
     end
 
     instancia_de_una_clase = UnaClase.new
     expect(instancia_de_una_clase.un_metodo_1).to eq("un_trait_met_1")
-    expect(instancia_de_una_clase.un_metodo_0).to eq("un_trait_met_0")
-    expect(instancia_de_una_clase.un_metodo_renombrado_0).to eq("un_trait_met_0")
-    expect(instancia_de_una_clase.un_metodo_2).to eq(instancia_de_una_clase)
-    expect(instancia_de_una_clase.un_metodo_renombrado_2).to eq(instancia_de_una_clase)
+    expect(instancia_de_una_clase.un_metodo_renombrado_1).to eq("un_trait_met_1")
+    expect(instancia_de_una_clase.un_metodo_2).to eq("un_trait_met_2")
+    expect(instancia_de_una_clase.un_metodo_3).to eq(instancia_de_una_clase)
+    expect(instancia_de_una_clase.un_metodo_renombrado_3).to eq(instancia_de_una_clase)
   end
 
-  it 'cuando una clase usa un trait y este trait redefine metodos que no implementa dicho trait con otro nombre,
-      luego se levanta una excepcion que el metodo a renombrar no existe en el trait a operar' do
+  it 'cuando una clase usa un trait renombrando un metodo que no define,
+      luego se levanta una excepcion por metodo a renombrar no existente en el trait a operar' do
     trait :UnTrait do
-      def un_metodo_0
-        "un_trait_met_0"
+      def un_metodo_1
+        "un_trait_met_1"
+      end
+    end
+
+    expect do
+      class OtraClase
+        uses UnTrait << { un_metodo_1: :renombrar_metodo_1, metodo_inexistente: :metodo_renombrado }
+      end
+    end.to raise_error("Metodo :metodo_inexistente no esta definido en el trait")
+  end
+
+  it 'cuando una clase usa un trait renombrando un metodo definido en la clase y no en el trait,
+  luego se levanta una excepcion por metodo a renombrar no existente en el trait a operar' do
+    trait :UnTrait do
+      def un_metodo_1
+        "un_trait_met_1"
       end
     end
 
@@ -346,12 +361,6 @@ describe 'Trait API' do
         def metodo_inexistente
           "sarasa"
         end
-      end
-    end.to raise_error("Metodo :metodo_inexistente no esta definido en el trait")
-
-    expect do
-      class OtraClase
-        uses UnTrait << { un_metodo_0: :renombrar_metodo_0, metodo_inexistente: :metodo_renombrado }
       end
     end.to raise_error("Metodo :metodo_inexistente no esta definido en el trait")
   end
@@ -382,22 +391,12 @@ describe 'Trait API' do
       uses UnTrait + (OtroTrait - [:otro_trait_metodo_0, :otro_trait_metodo_2])
     end
 
-    class OtraClase
-      uses UnTrait + (OtroTrait - [:otro_trait_metodo_0, :otro_trait_metodo_2])
-    end
-
     una_instancia_de_una_clase = UnaClase.new
-    una_instancia_de_otra_clase = OtraClase.new
 
     expect(una_instancia_de_una_clase.respond_to?(:otro_trait_metodo_0)).to be_falsey
     expect(una_instancia_de_una_clase.respond_to?(:otro_trait_metodo_2)).to be_falsey
     expect(una_instancia_de_una_clase.un_trait_metodo).to eq("un_trait")
     expect(una_instancia_de_una_clase.otro_trait_metodo_1).to eq("otro_trait")
-
-    expect(una_instancia_de_otra_clase.respond_to?(:otro_trait_metodo_0)).to be_falsey
-    expect(una_instancia_de_otra_clase.respond_to?(:otro_trait_metodo_2)).to be_falsey
-    expect(una_instancia_de_otra_clase.un_trait_metodo).to eq("un_trait")
-    expect(una_instancia_de_otra_clase.otro_trait_metodo_1).to eq("otro_trait")
   end
 
   it 'cuando una clase implementa la composicion de dos traits y luego a este se le substrae metodos, entonces
@@ -456,24 +455,13 @@ describe 'Trait API' do
       uses UnTrait + (OtroTrait << { otro_trait_metodo_1: :renombre_met_1, otro_trait_metodo_2: :renombre_met_2 })
     end
 
-    class OtraClase
-      uses (OtroTrait << { otro_trait_metodo_1: :renombre_met_1, otro_trait_metodo_2: :renombre_met_2 }) + UnTrait
-    end
-
     una_instancia_de_una_clase = UnaClase.new
-    una_instancia_de_otra_clase = OtraClase.new
 
     expect(una_instancia_de_una_clase.un_trait_metodo).to eq("un_trait")
     expect(una_instancia_de_una_clase.otro_trait_metodo_1).to eq("otro_trait_met_1")
     expect(una_instancia_de_una_clase.renombre_met_1).to eq("otro_trait_met_1")
     expect(una_instancia_de_una_clase.otro_trait_metodo_2).to eq("otro_trait_met_2")
     expect(una_instancia_de_una_clase.renombre_met_2).to eq("otro_trait_met_2")
-
-    expect(una_instancia_de_otra_clase.un_trait_metodo).to eq("un_trait")
-    expect(una_instancia_de_otra_clase.otro_trait_metodo_1).to eq("otro_trait_met_1")
-    expect(una_instancia_de_otra_clase.renombre_met_1).to eq("otro_trait_met_1")
-    expect(una_instancia_de_otra_clase.otro_trait_metodo_2).to eq("otro_trait_met_2")
-    expect(una_instancia_de_otra_clase.renombre_met_2).to eq("otro_trait_met_2")
   end
 
   it 'cuando una clase implementa la composicion de dos traits y luego se le renombran metodos, entonces
@@ -536,7 +524,7 @@ describe 'Trait API' do
     expect(una_instancia_de_una_clase.renombre_met_3).to eq("trait_met_3")
   end
 
-  it 'cuando una clase quiere implementar el renombre de de algunos metodos de un trait que ya fueron substraidos,
+  it 'cuando una clase quiere implementar el renombre de algunos metodos de un trait que ya fueron substraidos,
         entonces se levanta una excepcion que dicho metodo no existe en el trait a renombrar' do
     trait :UnTrait do
       def trait_metodo_1
@@ -555,7 +543,7 @@ describe 'Trait API' do
     end.to raise_error("Metodo :trait_metodo_1 no esta definido en el trait")
   end
 
-  it 'cuando una clase implementa la composicion de dos traits donde algun metodo original se repite y uno de estos renombra tambien elimina
+  it 'cuando una clase implementa la composicion de dos traits donde algun metodo original se repite y uno de estos renombra y tambien elimina
         dicho metodo repetido, entonces la clase implementa la union de los metodos de ambos traits junto a los metodos renombrados de dicho trait operado' do
     trait :UnTrait do
       def metodo_1
@@ -630,26 +618,32 @@ describe 'Trait API' do
 
   it "cuando una clase implementa la composicion de dos traits con metodos conflictivos, puedo usar una
       estrategia para que se ejecuten todas las implementaciones" do
-    mock = double
-    expect(mock).to receive(:llamar).twice
-
     trait :UnTrait do
-      def metodo_1(objeto)
-        objeto.llamar
+      def metodo_1
+        ejecutados << "un trait"
       end
     end
 
     trait :OtroTrait do
-      def metodo_1(objeto)
-        objeto.llamar
+      def metodo_1
+        ejecutados << "otro trait"
       end
     end
 
     class UnaClase
       uses UnTrait + OtroTrait.on_conflict(ImplementacionDeAmbos.new(:metodo_1))
+
+      attr_reader :ejecutados
+
+      def initialize
+        super
+        @ejecutados = []
+      end
     end
 
-    UnaClase.new.metodo_1(mock)
+    instancia = UnaClase.new
+    instancia.metodo_1
+    expect(instancia.ejecutados).to contain_exactly("un trait", "otro trait")
   end
 
   it "cuando una clase implementa la composicion de dos traits con metodos conflictivos, puedo usar una
