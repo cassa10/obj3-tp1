@@ -699,29 +699,29 @@ describe 'Trait API' do
   it "cuando una clase implementa la composicion de dos traits con algun metodo conflictivo y este se define que se resuelve con una
         estrategia personalizable, luego se resuelve dicho conflicto con esta nueva definicion creada en la estrategia" do
     trait :UnTrait do
-      def metodo_1(n)
+      def metodo_parametrizado_1(n)
         n + 10
       end
 
-      def metodo_2(x)
+      def metodo_parametrizado_2(x)
         "descripcion mas larga de x = " + x
       end
     end
 
     trait :OtroTrait do
-      def metodo_1(n)
+      def metodo_parametrizado_1(n)
         n + 20
       end
 
-      def metodo_2(x)
+      def metodo_parametrizado_2(x)
         "x = " + x
       end
     end
 
     class UnaClase
       uses UnTrait + OtroTrait.on_conflict(
-        [Personalizable.new(:metodo_1, proc { |_, _, n| n }),
-         Personalizable.new(:metodo_2, proc do |m1, m2, x|
+        [Personalizable.new(:metodo_parametrizado_1, proc { |_, _, n| n }),
+         Personalizable.new(:metodo_parametrizado_2, proc do |m1, m2, x|
            l1 = m1.bind(self).call(x)
            l2 = m2.bind(self).call(x)
            if l1.length >= l2.length
@@ -734,14 +734,14 @@ describe 'Trait API' do
     end
 
     instancia = UnaClase.new
-    expect(instancia.metodo_1(100)).to eq(100)
-    expect(instancia.metodo_2("100")).to eq("descripcion mas larga de x = 100")
+    expect(instancia.metodo_parametrizado_1(100)).to eq(100)
+    expect(instancia.metodo_parametrizado_2('100')).to eq("descripcion mas larga de x = 100")
   end
 
   it "cuando una clase implementa la composicion de dos traits con metodos conflictivos, puede usar una estrategia
     para resolver conflictos con un metodo y una estrategia distinta para otro metodo" do
     trait :UnTrait do
-      def metodo_1(n)
+      def metodo_parametrizado_1(n)
         n + 10
       end
 
@@ -749,13 +749,13 @@ describe 'Trait API' do
         90
       end
 
-      def metodo_3(n)
+      def metodo_parametrizado_3(n)
         n + 1
       end
     end
 
     trait :OtroTrait do
-      def metodo_1(n)
+      def metodo_parametrizado_1(n)
         n + 20
       end
 
@@ -763,23 +763,23 @@ describe 'Trait API' do
         190
       end
 
-      def metodo_3(n)
+      def metodo_parametrizado_3(n)
         n * 2
       end
     end
 
     class UnaClase
       uses UnTrait + OtroTrait.on_conflict([
-                                             InjectReduce.new(:metodo_1, 0, proc { |acc, n| acc + n }),
+                                             InjectReduce.new(:metodo_parametrizado_1, 0, proc { |acc, n| acc + n }),
                                              CualquierImplementacion.new(:metodo_2),
-                                             Personalizable.new(:metodo_3, proc { |_, _, n| n })
+                                             Personalizable.new(:metodo_parametrizado_3, proc { |_, _, n| n })
                                            ])
     end
 
     instancia = UnaClase.new
-    expect(instancia.metodo_1(100)).to eq(230)
+    expect(instancia.metodo_parametrizado_1(100)).to eq(230)
     expect(instancia.metodo_2 == 90 || instancia.metodo_2 == 190).to be_truthy
-    expect(instancia.metodo_3(5)).to eq(5)
+    expect(instancia.metodo_parametrizado_3(5)).to eq(5)
   end
 
   it 'cuando se le pide la description a un trait, luego este devuelve su nombre junto a el conjunto de operaciones aplicado' do

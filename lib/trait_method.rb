@@ -10,6 +10,7 @@ class TraitMethod
   def call(*args)
     @metodo.call(*args)
   end
+
   def mismo_nombre?(otro_metodo)
     nombre.eql? otro_metodo.nombre
   end

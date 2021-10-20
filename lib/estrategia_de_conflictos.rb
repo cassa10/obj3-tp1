@@ -37,7 +37,7 @@ class InjectReduce < EstrategiaDeConflictos
   end
 
   def manejar_conflicto(metodo, metodos_existentes, metodos_a_agregar)
-    metodo_de_operacion = metodos_a_agregar.first { |metodo_a_agregar| metodo_a_agregar.mismo_simbolo?(metodo) }
+    metodo_de_operacion = metodos_a_agregar.find { |metodo_a_agregar| metodo_a_agregar.mismo_simbolo?(metodo.nombre) }
     resultado_de_reduccion = metodo.reducir_con(metodo_de_operacion, @valor_inicial, @funcion_combinadora)
     reemplazar_metodo(metodo, resultado_de_reduccion, metodos_a_agregar, metodos_existentes)
   end
