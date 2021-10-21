@@ -1,34 +1,52 @@
-require 'combinable'
-
+#TODO: Refactorizar metodos
 class EstrategiaDeConflictos
   def initialize(metodos = [])
     super()
-    @metodos = [*metodos]
+    @nombre_metodos = [*metodos]
   end
 
-  def es_para(metodo)
-    @metodos.empty? || @metodos.include?(metodo)
+  def es_para?(metodo)
+    @nombre_metodos.empty? || @nombre_metodos.include?(metodo)
   end
 
-  def manejar_conflicto(metodo, metodos_existentes, metodos_a_agregar) end
+  def manejar_conflicto(metodos) end
 
 end
 
 class CualquierImplementacion < EstrategiaDeConflictos
+  def manejar_conflicto(metodos)
+    metodos_resueltos = []
+    @nombre_metodos.each do |nombre_metodo|
+      metodos_repetidos = metodos.filter { |metodo| metodo.mismo_simbolo? nombre_metodo }
+      metodos_resueltos << metodos_repetidos.first
+    end
+    metodos_resueltos
+  end
 end
 
-class ImplementacionDeAmbos < EstrategiaDeConflictos
-  include Combinable
+class ImplementacionDeTodos < EstrategiaDeConflictos
 
-  def manejar_conflicto(metodo, metodos_existentes, metodos_a_agregar)
-    metodo_combinado = metodo.combinar_con(metodos_a_agregar.first { |metodo_a_agregar| metodo_a_agregar.mismo_simbolo?(metodo) })
-    reemplazar_metodo(metodo, metodo_combinado, metodos_a_agregar, metodos_existentes)
+  def manejar_conflicto(metodos)
+    metodos_resueltos = []
+    @nombre_metodos.each do |nombre_metodo|
+      metodos_repetidos = metodos.filter { |metodo| metodo.mismo_simbolo? nombre_metodo }
+      metodos_resueltos << combinar(nombre_metodo, metodos_repetidos)
+    end
+    metodos_resueltos
+  end
+
+  def combinar(nombre_metodo, metodos)
+    modulo_temporal = Module.new
+    modulo_temporal.define_method(nombre_metodo) do |*args|
+      metodos.each { |m| m.metodo.bind(self).call(*args) }
+    end
+    metodo_nuevo = modulo_temporal.instance_method(nombre_metodo)
+    TraitMethod.new(metodo_nuevo, "")
   end
 
 end
 
 class InjectReduce < EstrategiaDeConflictos
-  include Combinable
 
   def initialize(metodos = [], valor_inicial, funcion_combinadora)
     super(metodos)
@@ -36,38 +54,47 @@ class InjectReduce < EstrategiaDeConflictos
     @funcion_combinadora = funcion_combinadora
   end
 
-  def manejar_conflicto(metodo, metodos_existentes, metodos_a_agregar)
-    metodo_de_operacion = metodos_a_agregar.find { |metodo_a_agregar| metodo_a_agregar.mismo_simbolo?(metodo.nombre) }
-    resultado_de_reduccion = metodo.reducir_con(metodo_de_operacion, @valor_inicial, @funcion_combinadora)
-    reemplazar_metodo(metodo, resultado_de_reduccion, metodos_a_agregar, metodos_existentes)
+  def manejar_conflicto(metodos)
+    metodos_resueltos = []
+    @nombre_metodos.each do |nombre_metodo|
+      metodos_repetidos = metodos.filter { |metodo| metodo.mismo_simbolo? nombre_metodo }
+      metodos_resueltos << combinar(nombre_metodo, metodos_repetidos, @valor_inicial, @funcion_combinadora)
+    end
+    metodos_resueltos
+  end
+
+  def combinar(nombre_metodo, metodos, acum, func_comb)
+    modulo_temporal = Module.new
+    modulo_temporal.define_method(nombre_metodo) do |*args|
+      metodos.inject(acum) { |acum, m| func_comb.call(acum, m.metodo.bind(self).call(*args)) }
+    end
+    metodo_nuevo = modulo_temporal.instance_method(nombre_metodo)
+    TraitMethod.new(metodo_nuevo, "")
   end
 end
 
 class Personalizable < EstrategiaDeConflictos
-  include Combinable
 
   def initialize(metodos = [], bloque_combinador)
     super(metodos)
     @proc_resolver_conflicto = bloque_combinador
   end
 
-  def manejar_conflicto(metodo, metodos_existentes, metodos_a_agregar)
-    metodo_de_operacion = metodos_a_agregar.first { |metodo_a_agregar| metodo_a_agregar.mismo_simbolo?(metodo) }
-    resultado_de_combinacion = combinar(metodo, metodo_de_operacion)
-    reemplazar_metodo(metodo, resultado_de_combinacion, metodos_a_agregar, metodos_existentes)
+  def manejar_conflicto(metodos)
+    metodos_resueltos = []
+    @nombre_metodos.each do |nombre_metodo|
+      metodos_repetidos = metodos.filter { |metodo| metodo.mismo_simbolo? nombre_metodo }
+      metodos_resueltos << combinar(nombre_metodo, metodos_repetidos, @proc_resolver_conflicto)
+    end
+    metodos_resueltos
   end
 
-  private
-
-  def combinar(metodo1, metodo2)
+  def combinar(nombre_metodo, metodos, func_combinadora)
     modulo_temporal = Module.new
-    proc_resolver_conflicto = @proc_resolver_conflicto
-    modulo_temporal.define_method(metodo1.nombre) do |*args|
-
-      proc_resolver_conflicto.call(metodo1.clonar_metodo, metodo2.clonar_metodo, *args)
+    modulo_temporal.define_method(nombre_metodo) do |*args|
+      func_combinadora.call(metodos.map {|m| m.metodo.bind(self)}, *args)
     end
-
-    metodo_resultado = modulo_temporal.instance_method(metodo1.nombre)
-    TraitMethod.new(metodo_resultado, metodo1.nombre_del_trait)
+    metodo_nuevo = modulo_temporal.instance_method(nombre_metodo)
+    TraitMethod.new(metodo_nuevo, "")
   end
 end

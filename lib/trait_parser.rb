@@ -24,14 +24,4 @@ class TraitParser
     metodos_a_agregar.map { |metodo| clase_temporal.instance_method(metodo) }
   end
 
-  private
-
-  def obtener_metodos_requeridos(clase_temporal)
-    if clase_temporal.respond_to? :metodos_requeridos
-      clase_temporal.metodos_requeridos
-    else
-      []
-    end
-  end
-
 end

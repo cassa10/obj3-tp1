@@ -587,7 +587,7 @@ describe 'Trait API' do
     end
 
     class UnaClase
-      uses UnTrait + OtroTrait.on_conflict(CualquierImplementacion.new)
+      uses UnTrait + OtroTrait, on_conflict: [CualquierImplementacion.new([:metodo_1])]
     end
 
     instancia = UnaClase.new
@@ -611,7 +611,7 @@ describe 'Trait API' do
 
     expect do
       class UnaClase
-        uses UnTrait + OtroTrait.on_conflict(CualquierImplementacion.new(:metodo_2))
+        uses UnTrait + OtroTrait, on_conflict: [CualquierImplementacion.new(:metodo_2)]
       end
     end.to raise_error("Conflicto entre metodos de traits")
   end
@@ -630,8 +630,14 @@ describe 'Trait API' do
       end
     end
 
+    trait :AlgunTrait do
+      def metodo_1
+        ejecutados << "algun trait"
+      end
+    end
+
     class UnaClase
-      uses UnTrait + OtroTrait.on_conflict(ImplementacionDeAmbos.new(:metodo_1))
+      uses UnTrait + OtroTrait + AlgunTrait, on_conflict: [ImplementacionDeTodos.new(:metodo_1)]
 
       attr_reader :ejecutados
 
@@ -643,7 +649,7 @@ describe 'Trait API' do
 
     instancia = UnaClase.new
     instancia.metodo_1
-    expect(instancia.ejecutados).to contain_exactly("un trait", "otro trait")
+    expect(instancia.ejecutados).to contain_exactly("un trait", "otro trait", "algun trait")
   end
 
   it "cuando una clase implementa la composicion de dos traits con metodos conflictivos, puedo usar una
@@ -661,7 +667,9 @@ describe 'Trait API' do
     end
 
     class UnaClase
-      uses UnTrait + OtroTrait.on_conflict(InjectReduce.new(:metodo_1, 0, proc { |acc, n| acc + n }))
+      uses UnTrait + OtroTrait, on_conflict: [
+        InjectReduce.new(:metodo_1, 0, proc { |acc, n| acc + n })
+      ]
     end
 
     instancia = UnaClase.new
@@ -689,11 +697,13 @@ describe 'Trait API' do
     end
 
     class UnaClase
-      uses UnTrait + OtroTrait + OtroTraitMas.on_conflict(InjectReduce.new(:metodo_1, "", proc { |acc, s| acc + s }))
+      uses UnTrait + OtroTrait + OtroTraitMas, on_conflict: [
+        InjectReduce.new(:metodo_1, "", proc { |acc, s| "(" + acc + s + ")" })
+      ]
     end
 
     instancia = UnaClase.new
-    expect(instancia.metodo_1("hola")).to eq("hola untraithola otrotraithola otrotraitmas")
+    expect(instancia.metodo_1("hola")).to eq("(((hola untrait)hola otrotrait)hola otrotraitmas)")
   end
 
   it "cuando una clase implementa la composicion de dos traits con algun metodo conflictivo y este se define que se resuelve con una
@@ -704,7 +714,7 @@ describe 'Trait API' do
       end
 
       def metodo_parametrizado_2(x)
-        "descripcion mas larga de x = " + x
+        "z) " + x
       end
     end
 
@@ -714,28 +724,32 @@ describe 'Trait API' do
       end
 
       def metodo_parametrizado_2(x)
-        "x = " + x
+        "a) " + x
+      end
+    end
+
+    trait :AlgunTrait do
+      def metodo_parametrizado_1(n)
+        n + 50
+      end
+
+      def metodo_parametrizado_2(x)
+        "b) " + x
       end
     end
 
     class UnaClase
-      uses UnTrait + OtroTrait.on_conflict(
-        [Personalizable.new(:metodo_parametrizado_1, proc { |_, _, n| n }),
-         Personalizable.new(:metodo_parametrizado_2, proc do |m1, m2, x|
-           l1 = m1.bind(self).call(x)
-           l2 = m2.bind(self).call(x)
-           if l1.length >= l2.length
-             l1
-           else
-             l2
-           end
-         end)
-        ])
+      uses UnTrait + AlgunTrait + OtroTrait, on_conflict: [
+        Personalizable.new([:metodo_parametrizado_1, :metodo_parametrizado_2], proc do |metodos, x|
+          metodos.map { |metodo| metodo.call(x) }.max
+        end)
+      ]
     end
 
     instancia = UnaClase.new
-    expect(instancia.metodo_parametrizado_1(100)).to eq(100)
-    expect(instancia.metodo_parametrizado_2('100')).to eq("descripcion mas larga de x = 100")
+    expect(instancia.metodo_parametrizado_1(100)).to eq(150)
+    #max agarra el ultimo string por orden alfabetico
+    expect(instancia.metodo_parametrizado_2('item')).to eq("z) item")
   end
 
   it "cuando una clase implementa la composicion de dos traits con metodos conflictivos, puede usar una estrategia
@@ -769,11 +783,11 @@ describe 'Trait API' do
     end
 
     class UnaClase
-      uses UnTrait + OtroTrait.on_conflict([
-                                             InjectReduce.new(:metodo_parametrizado_1, 0, proc { |acc, n| acc + n }),
-                                             CualquierImplementacion.new(:metodo_2),
-                                             Personalizable.new(:metodo_parametrizado_3, proc { |_, _, n| n })
-                                           ])
+      uses UnTrait + OtroTrait, on_conflict: [
+        InjectReduce.new(:metodo_parametrizado_1, 0, proc { |acc, n| acc + n }),
+        CualquierImplementacion.new(:metodo_2),
+        Personalizable.new(:metodo_parametrizado_3, proc { |_, n| n })
+      ]
     end
 
     instancia = UnaClase.new

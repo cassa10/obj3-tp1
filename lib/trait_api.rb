@@ -7,8 +7,8 @@ end
 
 class Class
 
-  def uses(trait)
-    trait.metodos.each do |metodo_de_trait|
+  def uses(trait, on_conflict: [])
+    trait.metodos_sin_conflictos(on_conflict).each do |metodo_de_trait|
       define_method(metodo_de_trait.nombre, metodo_de_trait.metodo) unless is_method_defined(metodo_de_trait.nombre)
     end
     trait.metodos_requeridos.each do |simbolo|

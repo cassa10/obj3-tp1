@@ -7,6 +7,7 @@ class Operation
   def initialize(operation_type, operator)
     super()
     #OperationType = :+ | :- | :<<
+    # TODO: Refactorizar a subclasses de OperacionComposicion (+), OperacionSubstraccion (-), OperacionRenombre (<<)
     @operation_type = validate_operation_type(operation_type)
     #Operator = Trait | [:method]
     @operator = operator
@@ -25,19 +26,11 @@ class Operation
     end
   end
 
-  def estrategias_de_conflictos
-    if operator.is_a? Trait
-      operator.estrategias_de_conflictos
-    else
-      []
-    end
-  end
-
-  def aplicar_con(metodos, estrategias_de_conflictos)
+  def aplicar_con(metodos)
     case @operation_type
     when :+
       # operator :: Trait
-      union_de_metodos(metodos, @operator.metodos, estrategias_de_conflictos)
+      union_de_metodos(metodos, @operator.metodos)
     when :-
       # operator :: [Symbol]
       quitar_metodos(metodos, @operator)
@@ -53,25 +46,10 @@ class Operation
     metodos_de_trait.reject { |metodo_de_trait| metodos_de_operacion.include?(metodo_de_trait.metodo.original_name) }
   end
 
-  def union_de_metodos(metodos_de_trait, metodos_de_operacion, estrategias_de_conflictos)
-    validar_conflictos(metodos_de_trait, metodos_de_operacion, estrategias_de_conflictos)
+  def union_de_metodos(metodos_de_trait, metodos_de_operacion)
     metodos_de_trait | metodos_de_operacion
   end
 
-  def validar_conflictos(metodos_de_trait, metodos_de_operacion, estrategias_de_conflictos)
-    metodos_conflictivos = metodos_de_trait.select do |metodo|
-      metodos_de_operacion.any? do |m_op|
-        (m_op.mismo_nombre? metodo) && (m_op.distinto_trait? metodo)
-      end
-    end
-
-    metodos_conflictivos.each do |metodo|
-      estrategia_correcta = estrategias_de_conflictos.find { |estrategia| estrategia.es_para metodo.nombre }
-      raise 'Conflicto entre metodos de traits' if estrategia_correcta.nil?
-
-      estrategia_correcta.manejar_conflicto(metodo, metodos_de_trait, metodos_de_operacion)
-    end
-  end
 
   def agregar_metodos(metodos_de_trait, metodos_a_agregar)
     nuevos_metodos_de_trait = [*metodos_de_trait]
