@@ -825,4 +825,38 @@ describe 'Trait API' do
     expect((UnTrait << { m1: :renombre_m1, m3: :renombre_m3 }).description).to eq "UnTrait << {:m1=>:renombre_m1, :m3=>:renombre_m3}"
   end
 
+
+  it 'cuando una clase usa un trait donde este usa a otro trait, luego la clase compone a ambos traits' do
+    trait :OtroTrait do
+      def otro_m1
+        "otro_trait"
+      end
+    end
+
+    trait :UnTrait do
+      uses OtroTrait
+      def m1
+        "un_trait"
+      end
+
+      def m2
+        "un_trait"
+      end
+
+      def m3
+        "un_trait"
+      end
+    end
+
+    class UnaClase
+      uses UnTrait
+    end
+
+    instancia = UnaClase.new
+    expect(instancia.m1).to eq("un_trait")
+    expect(instancia.m2).to eq("un_trait")
+    expect(instancia.m3).to eq("un_trait")
+    expect(instancia.otro_m1).to eq("otro_trait")
+  end
+
 end
