@@ -19,7 +19,7 @@ class TraitParser
       end
     end
     modulo_temporal.module_eval &@methods
-    agregar_trait_interno(Trait.new(@nombre_trait, obtener_metodos(modulo_temporal), nuevos_metodos_requeridos), inside_trait)
+    agregar_trait_interno(TraitSimple.new(@nombre_trait, obtener_metodos(modulo_temporal), nuevos_metodos_requeridos), inside_trait)
   end
 
   def obtener_metodos(clase_temporal)

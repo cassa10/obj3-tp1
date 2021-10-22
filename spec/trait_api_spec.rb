@@ -2,6 +2,8 @@ require 'rspec'
 require 'trait'
 require 'trait_api'
 require 'estrategia_de_conflictos'
+require 'trait_simple'
+require 'trait_compuesto'
 
 describe 'Trait API' do
 

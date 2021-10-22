@@ -9,7 +9,9 @@ class EstrategiaDeConflictos
     @nombre_metodos.empty? || @nombre_metodos.include?(metodo)
   end
 
-  def manejar_conflicto(metodos) end
+  def manejar_conflicto(metodos)
+    raise 'this method should be overriden'
+  end
 
 end
 

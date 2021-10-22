@@ -4,7 +4,7 @@ require 'trait_method'
 class Operation
   attr_reader :operator
 
-  def initialize(operation_type, operator)
+  def initialize(operation_type)
     super()
     #OperationType = :+ | :- | :<<
     # TODO: Refactorizar a subclasses de OperacionComposicion (+), OperacionSubstraccion (-), OperacionRenombre (<<)
@@ -17,27 +17,31 @@ class Operation
     ' ' + @operation_type.to_s + ' ' + @operator.to_s
   end
 
-  def metodos_requeridos
+  def metodos_requeridos(operador)
     # Aca definitivamente falta armar subclases de operaciones para no tener que hacer estas cosas
-    if operator.is_a? Trait
-      operator.metodos_requeridos
+    if operador.is_a? Trait
+      operador.metodos_requeridos
     else
       []
     end
   end
 
-  def aplicar_con(metodos)
+  def aplicar_metodos_con(trait, operador)
     case @operation_type
     when :+
       # operator :: Trait
-      union_de_metodos(metodos, @operator.metodos)
+      union_de_metodos(trait.metodos, operador.metodos)
     when :-
       # operator :: [Symbol]
-      quitar_metodos(metodos, @operator)
+      quitar_metodos(trait.metodos, operador)
     when :<<
       # operator :: Hash
-      agregar_metodos(metodos, @operator)
+      agregar_metodos(trait.metodos, operador)
     end
+  end
+
+  def to_s()
+    @operation_type.to_s
   end
 
   private
