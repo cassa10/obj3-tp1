@@ -1,4 +1,4 @@
-require 'operation'
+require 'operacion'
 
 class Trait
 

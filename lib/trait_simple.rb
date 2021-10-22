@@ -23,16 +23,16 @@ class TraitSimple < Trait
   end
 
   def +(trait)
-    TraitCompuesto.new(self, trait, Operation.new(:+))
+    TraitCompuesto.new(self, trait, OperacionComposicion.new)
   end
 
   def -(arg_methods)
     methods = [*arg_methods]
-    TraitCompuesto.new(self, methods, Operation.new(:-))
+    TraitCompuesto.new(self, methods, OperacionSubstraccion.new)
   end
 
   def <<(metodos_a_renombrar)
-    TraitCompuesto.new(self, metodos_a_renombrar, Operation.new(:<<))
+    TraitCompuesto.new(self, metodos_a_renombrar, OperacionRenombre.new)
   end
 
 end
